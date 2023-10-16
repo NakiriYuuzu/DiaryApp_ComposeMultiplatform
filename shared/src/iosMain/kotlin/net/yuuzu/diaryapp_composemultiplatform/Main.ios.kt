@@ -5,6 +5,8 @@ import androidx.compose.runtime.remember
 import com.moriatsushi.insetsx.WindowInsetsUIViewController
 import moe.tlaster.precompose.PreComposeWindowHolder
 import moe.tlaster.precompose.ProvidePreComposeCompositionLocals
+import net.yuuzu.diaryapp_composemultiplatform.di.appModule
+import net.yuuzu.diaryapp_composemultiplatform.di.initKoin
 import platform.UIKit.UIScreen
 import platform.UIKit.UIUserInterfaceStyle
 import platform.UIKit.UIViewController
@@ -30,6 +32,7 @@ fun MainView() {
 
 @Suppress("FunctionName", "unused")
 fun MainViewController(): UIViewController {
+    initKoin { modules(appModule) }
     return WindowInsetsUIViewController {
         MainView()
     }
