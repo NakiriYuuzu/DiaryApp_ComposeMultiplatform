@@ -11,8 +11,9 @@ object Versions {
     const val kotlinx_coroutines = "1.7.3"
 
     const val ktor = "2.3.4"
-    const val koin = "3.5.0"
     const val calf = "0.1.1"
+    const val koin = "3.5.0"
+    const val koinCompose = "1.1.0"
     const val moriMoshi = "0.1.0-alpha10"
     const val precompose = "1.5.4"
     const val sqlDelight = "2.0.0"
@@ -21,4 +22,5 @@ object Versions {
     const val moko_Biometry = "0.4.0"
     const val moko_Resources = "0.23.0"
     const val moko_Permissions = "0.16.0"
+    const val cashApp_molecule = "0.2.1"
 }

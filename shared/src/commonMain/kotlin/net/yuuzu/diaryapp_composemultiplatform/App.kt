@@ -8,10 +8,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.moriatsushi.insetsx.SystemBarsBehavior
 import com.moriatsushi.insetsx.rememberWindowInsetsController
-import moe.tlaster.precompose.navigation.rememberNavigator
 import net.yuuzu.diaryapp_composemultiplatform.common.navigation.Navigation
 import net.yuuzu.diaryapp_composemultiplatform.common.theme.AppTheme
-import net.yuuzu.diaryapp_composemultiplatform.presentation.main.MainScreen
 
 @Composable
 fun App(

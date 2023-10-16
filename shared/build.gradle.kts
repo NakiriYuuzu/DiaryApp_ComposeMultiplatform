@@ -75,8 +75,10 @@ kotlin {
                     api(appcompat)
                     api(activityCompose)
                 }
+                implementation(Deps.Koin.android)
                 implementation(Deps.Ktor.ktorAndroid)
                 implementation(Deps.SqlDelight.androidDriver)
+                implementation(Deps.Koin.compose)
             }
         }
         val iosX64Main by getting
@@ -107,5 +109,13 @@ android {
     }
     kotlin {
         jvmToolchain(18)
+    }
+}
+
+sqldelight {
+    databases {
+        create("DiaryDatabase") {
+            packageName.set("${Configurations.applicationId}.database")
+        }
     }
 }

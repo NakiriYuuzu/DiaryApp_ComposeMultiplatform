@@ -11,13 +11,17 @@ object Deps {
     object Koin { // Dependency Injection
         const val core = "io.insert-koin:koin-core:${Versions.koin}"
         const val test = "io.insert-koin:koin-test:${Versions.koin}"
+        const val compose = "io.insert-koin:koin-compose:${Versions.koinCompose}" // for precompose koin
         const val android = "io.insert-koin:koin-android:${Versions.koin}"
     }
     object Precompose { // navigation & viewModel
         const val precompose = "moe.tlaster:precompose:${Versions.precompose}"
-        const val precomposeMolecule = "moe.tlaster:precompose-molecule:${Versions.precompose}"
         const val precomposeViewModel = "moe.tlaster:precompose-viewmodel:${Versions.precompose}"
         const val precomposeKoin = "moe.tlaster:precompose-koin:${Versions.precompose}"
+        object molecule {
+            const val cashApp = "app.cash.molecule:molecule-runtime:${Versions.cashApp_molecule}"
+            const val precompose = "moe.tlaster:precompose-molecule:${Versions.precompose}"
+        }
     }
     object SharedPreferences { // Storage
         const val multiplatform = "com.russhwolf:multiplatform-settings:${Versions.multiplatform}"
