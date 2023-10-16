@@ -36,6 +36,16 @@ class DiaryLocalDataSourceImpl(
             }
     }
 
+    override fun getRecentDiaries(amount: Long): Flow<List<Diary>> {
+        return queries
+            .getRecentDiaries(amount)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { diaryEntities ->
+                diaryEntities.map { it.toDiary() }
+            }
+    }
+
     override fun getDiariesByTag(tag: String): Flow<List<Diary>> {
         return queries
             .getDiariesByTag(tag = tag)

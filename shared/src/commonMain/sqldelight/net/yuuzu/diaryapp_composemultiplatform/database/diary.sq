@@ -17,6 +17,12 @@ SELECT *
 FROM diaryEntity
 ORDER BY createdAt DESC;
 
+getRecentDiaries:
+SELECT *
+FROM diaryEntity
+ORDER BY createdAt DESC
+LIMIT :amount;
+
 getDiariesByDate:
 SELECT *
 FROM diaryEntity
