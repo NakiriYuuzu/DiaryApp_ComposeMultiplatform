@@ -1,7 +1,7 @@
 object Versions {
     const val kotlin = "1.9.10"
     const val agp = "8.1.1"
-    const val compose = "1.5.10-rc01"
+    const val compose = "1.5.10-rc02"
 
     const val androidx_core = "1.12.0"
     const val androidx_appcompat = "1.6.1"
