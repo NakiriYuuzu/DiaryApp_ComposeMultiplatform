@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.yuuzu.diaryapp_composemultiplatform.common.ImageType
@@ -37,12 +39,12 @@ fun CustomIcon(
             Image(
                 bitmap = bitmap,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .size(size)
                     .clip(shape)
                     .background(background)
                     .clickable { onClick() }
-                    .padding(padding)
-                    .size(size),
             )
         }
         is ImageType.VectorType -> {

@@ -21,20 +21,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import net.yuuzu.diaryapp_composemultiplatform.common.ImageType
 
 @Composable
 fun IconVertical(
     text: String,
-    bitmap: ImageBitmap ?= null,
-    imageVector: ImageVector ?= null,
     size: Dp = 48.dp,
+    imageType: ImageType,
     textStyle: TextStyle = MaterialTheme.typography.headlineMedium,
     textColor: Color = MaterialTheme.colorScheme.onPrimary,
     backgroundColor: Color = MaterialTheme.colorScheme.onPrimary,
+    padding: Dp = 8.dp,
     onClick: () -> Unit,
 ) {
     Column(
@@ -50,19 +52,22 @@ fun IconVertical(
                 .background(backgroundColor)
                 .clickable { onClick() }
                 .size(size)
-                .padding(8.dp)
+                .padding(padding)
         ) {
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = null,
-                )
-            }
-            if (imageVector != null) {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = null,
-                )
+            when (imageType) {
+                is ImageType.BitmapType -> {
+                    Image(
+                        bitmap = imageType.bitmap,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                is ImageType.VectorType -> {
+                    Icon(
+                        imageVector = imageType.imageVector,
+                        contentDescription = null,
+                    )
+                }
             }
         }
         Text(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,22 +38,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.calf.picker.toImageBitmap
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.viewmodel.viewModel
 import net.yuuzu.diaryapp_composemultiplatform.common.ImageType
 import net.yuuzu.diaryapp_composemultiplatform.common.navigation.Screen
+import net.yuuzu.diaryapp_composemultiplatform.data.source.local.model.Diary
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.CustomIcon
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.IconVertical
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.InteractionBlocker
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.SectionWithHeader
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.ShortcutButton
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.components.TopHeader
+import net.yuuzu.diaryapp_composemultiplatform.utils.toDateTimeString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navigator: Navigator) {
     val coroutineScope = rememberCoroutineScope()
     val bottomScaffoldState = rememberBottomSheetScaffoldState()
+
+    val viewModel = viewModel(MainViewModel::class) { MainViewModel() }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     BottomSheetScaffold(
         scaffoldState = bottomScaffoldState,
@@ -73,7 +83,7 @@ fun MainScreen(navigator: Navigator) {
             )
         },
         sheetContent = {
-            HomeSheetContent()
+            HomeSheetContent(state, navigator, viewModel)
         },
         sheetSwipeEnabled = true,
         sheetPeekHeight = 300.dp,
@@ -92,13 +102,13 @@ fun MainScreen(navigator: Navigator) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Current Total${if (true) " Diary" else "Diaries"}:",
+                    text = "Current Total${if (state.diaries.size > 1) " Diaries" else " Diary"}:",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
-                    text = "0",
+                    text = "${state.diaries.size}",
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -119,7 +129,7 @@ fun MainScreen(navigator: Navigator) {
                     iconTint = MaterialTheme.colorScheme.primary,
                     background = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     modifier = Modifier.weight(1f)
-                ) { navigator.navigate(route = Screen.DetailScreen.route) }
+                ) { navigator.navigate(route = Screen.DetailScreen.route.plus("/0")) }
                 ShortcutButton(
                     text = "Calendar",
                     icon = Icons.Rounded.EditCalendar,
@@ -127,7 +137,7 @@ fun MainScreen(navigator: Navigator) {
                     background = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f),
                     modifier = Modifier.weight(1f)
                 ) {
-
+                    // TODO: Calendar
                 }
                 ShortcutButton(
                     text = "Show All",
@@ -137,12 +147,14 @@ fun MainScreen(navigator: Navigator) {
                     modifier = Modifier.weight(1f)
                 ) {
                     coroutineScope.launch {
-                        bottomScaffoldState.bottomSheetState.expand()
+                        bottomScaffoldState.bottomSheetState.show()
                     }
                 }
             }
             // Recently added
             RecentlyActivity(
+                state = state,
+                navigator = navigator,
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -151,7 +163,9 @@ fun MainScreen(navigator: Navigator) {
 
 @Composable
 fun HomeSheetContent(
-
+    state: MainState,
+    navigator: Navigator,
+    viewModel: MainViewModel
 ) {
     InteractionBlocker(
         blockCondition = false,
@@ -163,22 +177,17 @@ fun HomeSheetContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             item {
-                TagFilter(modifier = Modifier.padding(horizontal = 16.dp))
+                TagFilter(
+                    state = state,
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
-            item {
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
-                DiaryItem()
+            items(
+                items = state.diaries,
+                key = { item -> item.id!! }
+            ) { diary ->
+                DiaryItem(diary = diary, navigator = navigator)
             }
         }
     }
@@ -186,42 +195,42 @@ fun HomeSheetContent(
 
 @Composable
 fun TagFilter(
+    state: MainState,
+    viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val tag = listOf(
-        "tag",
-        "tag",
-        "tag",
-        "tag",
-    )
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier.fillMaxWidth()
     ) {
-        items(tag.size) { index ->
-            val item = tag[index]
+        items(
+            count = state.tags.size,
+            key = { index -> state.tags[index] }
+        ) {
+            val currentTag = state.tags[it]
+            val isSelectedTag = state.selectedTag == currentTag
             Box(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
                         shape = MaterialTheme.shapes.small,
-                        color = if (index == 0) Color.Transparent
-                                else MaterialTheme.colorScheme.primary
+                        color = if (isSelectedTag) Color.Transparent
+                        else MaterialTheme.colorScheme.primary
                     )
                     .clip(MaterialTheme.shapes.medium)
                     .background(
-                        if (index == 0) MaterialTheme.colorScheme.primary
+                        if (isSelectedTag) MaterialTheme.colorScheme.primary
                         else Color.Transparent
                     )
-                    .clickable {  }
+                    .clickable { viewModel.onEvent(MainEvent.OnTagSelected(currentTag)) }
                     .padding(24.dp, 12.dp)
             ) {
                 Text(
-                    text = item,
+                    text = currentTag,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (index == 0) MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.primary
+                    color = if (isSelectedTag) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -230,31 +239,41 @@ fun TagFilter(
 
 @Composable
 fun DiaryItem(
-
+    diary: Diary,
+    navigator: Navigator
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {  }
+            .clickable { navigator.navigate(Screen.DetailScreen.route.plus("/${diary.id}")) }
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        CustomIcon(
-            imageType = ImageType.VectorType(Icons.Rounded.Image),
-            size = 50.dp,
-            background = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-        ) {}
+        if (diary.imageBytes != null) {
+            CustomIcon(
+                imageType = ImageType.BitmapType(diary.imageBytes.toImageBitmap()),
+                size = 50.dp,
+                background = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+            ) {}
+        } else {
+            CustomIcon(
+                imageType = ImageType.VectorType(Icons.Rounded.Image),
+                size = 50.dp,
+                background = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+            ) {}
+        }
+
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = "Title",
+                text = diary.title,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Date",
+                text = diary.toDateTimeString(),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Normal),
             )
         }
@@ -263,7 +282,7 @@ fun DiaryItem(
             horizontalAlignment = Alignment.End,
         ) {
             Text(
-                text = "TAG",
+                text = diary.tag,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
             )
         }
@@ -272,6 +291,8 @@ fun DiaryItem(
 
 @Composable
 fun RecentlyActivity(
+    state: MainState,
+    navigator: Navigator,
     modifier: Modifier = Modifier
 ) {
     SectionWithHeader(
@@ -283,50 +304,22 @@ fun RecentlyActivity(
     ) {
         LazyRow(
             contentPadding = PaddingValues(end = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            item {
+            items(
+                items = state.recentlyDiaries,
+                key = { item -> item.id!! }
+            ) { diary ->
                 IconVertical(
-                    text = "Today",
-                    imageVector = Icons.Rounded.Image,
+                    text = diary.title,
+                    imageType = if (diary.imageBytes != null) ImageType.BitmapType(diary.imageBytes.toImageBitmap())
+                                else ImageType.VectorType(Icons.Rounded.Image),
                     textColor = MaterialTheme.colorScheme.onBackground,
                     textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
                     backgroundColor = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.1f),
-                    onClick = {}
-                )
-                IconVertical(
-                    text = "Yesterday",
-                    imageVector = Icons.Rounded.Image,
-                    textColor = MaterialTheme.colorScheme.onBackground,
-                    textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    backgroundColor = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.1f),
-                    onClick = {}
-                )
-                IconVertical(
-                    text = "Title...",
-                    imageVector = Icons.Rounded.Image,
-                    size = 50.dp,
-                    textColor = MaterialTheme.colorScheme.onBackground,
-                    textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    backgroundColor = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.1f),
-                    onClick = {}
-                )
-                IconVertical(
-                    text = "Title...",
-                    imageVector = Icons.Rounded.Image,
-                    textColor = MaterialTheme.colorScheme.onBackground,
-                    textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    backgroundColor = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.1f),
-                    onClick = {}
-                )
-                IconVertical(
-                    text = "Title...",
-                    imageVector = Icons.Rounded.Image,
-                    textColor = MaterialTheme.colorScheme.onBackground,
-                    textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    backgroundColor = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.1f),
-                    onClick = {}
+                    padding = if (diary.imageBytes != null) 0.dp else 8.dp,
+                    onClick = { navigator.navigate(Screen.DetailScreen.route.plus("/${diary.id}")) }
                 )
             }
         }

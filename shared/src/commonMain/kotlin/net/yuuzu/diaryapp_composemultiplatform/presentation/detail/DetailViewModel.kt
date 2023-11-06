@@ -28,14 +28,17 @@ class DetailViewModel(
         private set
 
     init {
-        if (diaryId > 0) {
-            viewModelScope.launch {
-                repository.getDiary(diaryId).collect { diary ->
-                    newDiary = diary
+        if (newDiary == null) {
+            if (diaryId > 0) {
+                println(diaryId)
+                viewModelScope.launch {
+                    repository.getDiary(diaryId).collect { diary ->
+                        newDiary = diary
+                    }
                 }
+            } else {
+                newDiary = Diary.empty
             }
-        } else {
-            newDiary = null
         }
     }
 

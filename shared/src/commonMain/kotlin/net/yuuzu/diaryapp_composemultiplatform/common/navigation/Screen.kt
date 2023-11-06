@@ -14,5 +14,7 @@ sealed class Screen(
     )
     data object DetailScreen: Screen(
         route = "detail_screen",
+        objectName = "diaryId",
+        objectPath = "/{diaryId}"
     )
 }

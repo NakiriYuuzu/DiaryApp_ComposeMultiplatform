@@ -3,6 +3,7 @@ package net.yuuzu.diaryapp_composemultiplatform.common.navigation
 import androidx.compose.runtime.Composable
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.navigation.path
 import moe.tlaster.precompose.navigation.rememberNavigator
 import net.yuuzu.diaryapp_composemultiplatform.presentation.detail.DetailScreen
 import net.yuuzu.diaryapp_composemultiplatform.presentation.main.MainScreen
@@ -16,8 +17,11 @@ fun Navigation(navigator: Navigator = rememberNavigator()) {
         scene(route = Screen.MainScreen.route) {
             MainScreen(navigator)
         }
-        scene(route = Screen.DetailScreen.route) {
-            DetailScreen(navigator)
+        scene(route = Screen.DetailScreen.route.plus(Screen.DetailScreen.objectPath)) { backStackEntry ->
+            Screen.DetailScreen.objectName?.let { objectName ->
+                val diaryId: Long? = backStackEntry.path<Long>(objectName)
+                DetailScreen(navigator, diaryId ?: 0)
+            }
         }
     }
 }

@@ -2,9 +2,6 @@ package net.yuuzu.diaryapp_composemultiplatform.presentation.main
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -64,20 +61,12 @@ class MainViewModel: ViewModel(), KoinComponent {
             }
             is MainEvent.OnTagSelected -> {
                 viewModelScope.launch {
-                    if (event.tag != "All") {
-                        repository.getDiariesByTag(event.tag).collect { diaries ->
-                            _state.update { it.copy(
-                                selectedTag = event.tag,
-                                diaries = diaries
-                            ) }
-                        }
-                    } else {
-                        repository.getDiaries().collect { diaries ->
-                            _state.update { it.copy(
-                                selectedTag = event.tag,
-                                diaries = diaries
-                            ) }
-                        }
+                    repository.getDiariesByTag(event.tag).collect { diaries ->
+                        println("selected tag: $diaries")
+                        _state.update { it.copy(
+                            selectedTag = event.tag,
+                            diaries = diaries
+                        ) }
                     }
                 }
             }
